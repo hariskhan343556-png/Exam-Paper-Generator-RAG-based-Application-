@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaperGen — Turn teaching material into exam papers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2340;
+    --ink-soft:#4A5170;
+    --paper:#FBF8F1;
+    --paper-dim:#F2EEE2;
+    --line:#E4DFCF;
+    --white:#FFFFFF;
+
+    --violet:#6C63FF;
+    --coral:#FF6B5B;
+    --teal:#17A398;
+    --amber:#F2A93B;
+    --purple:#8A63D2;
+    --rose:#E0567C;
+    --red:#E24A4A;
+    --blue:#2B6CB0;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Plus Jakarta Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+  }
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;max-width:100%;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 26px;border-radius:10px;font-weight:700;font-size:15px;
+    cursor:pointer;border:2px solid transparent;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--coral);color:var(--white);box-shadow:0 6px 0 #C94836;}
+  .btn-primary:hover{box-shadow:0 8px 0 #C94836;transform:translateY(-2px);}
+  .btn-ghost{background:transparent;border-color:var(--ink);color:var(--ink);}
+  .btn-ghost:hover{background:var(--ink);color:var(--paper);}
+
+  /* NAV */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(251,248,241,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;max-width:1180px;margin:0 auto;
+  }
+  .logo{
+    display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;
+    font-weight:700;font-size:21px;color:var(--ink);
+  }
+  .logo-mark{
+    width:34px;height:34px;border-radius:8px;
+    background:linear-gradient(135deg,var(--coral),var(--amber));
+    display:flex;align-items:center;justify-content:center;
+    color:white;font-size:16px;font-weight:800;flex-shrink:0;
+  }
+  .nav-links{display:flex;gap:34px;align-items:center;}
+  .nav-links a{font-size:15px;font-weight:600;color:var(--ink-soft);}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex;gap:12px;align-items:center;}
+  .nav-cta .btn{padding:10px 20px;font-size:14px;}
+  @media (max-width:860px){ .nav-links{display:none;} }
+
+  /* HERO */
+  .hero{
+    padding:88px 0 60px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .wrap{
+    display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;
+  }
+  .eyebrow-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--paper-dim);border:1px solid var(--line);
+    padding:7px 14px;border-radius:999px;font-size:13px;font-weight:700;
+    color:var(--ink-soft);margin-bottom:22px;
+  }
+  .eyebrow-tag .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .hero h1{
+    font-size:clamp(38px,4.6vw,58px);
+    line-height:1.05;
+    max-width:620px;
+  }
+  .hero h1 em{font-style:italic;color:var(--coral);}
+  .hero p.sub{
+    margin-top:22px;font-size:18px;color:var(--ink-soft);max-width:520px;
+  }
+  .hero-actions{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap;}
+
+  /* Hero visual: a stacked "paper" mockup */
+  .paper-stack{position:relative;height:440px;}
+  .sheet{
+    position:absolute;background:var(--white);border-radius:16px;
+    box-shadow:0 20px 50px -12px rgba(27,35,64,0.18);
+    border:1px solid var(--line);padding:26px 28px;
+  }
+  .sheet.back{
+    width:88%;height:88%;top:6%;left:9%;
+    transform:rotate(-4deg);background:var(--paper-dim);
+  }
+  .sheet.front{
+    width:92%;height:92%;top:2%;left:2%;
+  }
+  .sheet.front .doc-head{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:18px;
+  }
+  .sheet.front .doc-head .title{font-family:'Fraunces',serif;font-weight:600;font-size:18px;}
+  .sheet.front .doc-head .meta{font-size:12px;color:var(--ink-soft);text-align:right;}
+  .q-line{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;}
+  .q-num{
+    width:22px;height:22px;border-radius:6px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:white;
+  }
+  .q-text{flex:1;}
+  .q-text .line{height:9px;border-radius:4px;background:var(--paper-dim);margin-bottom:7px;}
+  .q-text .line.w60{width:60%;}
+  .q-text .line.w80{width:80%;}
+  .q-text .line.w40{width:40%;}
+  .badge-float{
+    position:absolute;background:var(--white);border:1px solid var(--line);
+    border-radius:12px;padding:10px 14px;box-shadow:0 12px 24px -8px rgba(27,35,64,0.2);
+    font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;
+  }
+  .badge-float.b1{top:-18px;right:6%;color:var(--teal);}
+  .badge-float.b2{bottom:14%;left:-22px;color:var(--purple);}
+  .badge-float .ic{width:16px;height:16px;border-radius:4px;}
+
+  @media (max-width:900px){
+    .hero .wrap{grid-template-columns:1fr;}
+    .paper-stack{height:340px;margin-top:20px;}
+  }
+
+  /* SECTION HEADERS */
+  .section{padding:88px 0;}
+  .section.alt{background:var(--white);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .section-head{max-width:640px;margin-bottom:52px;}
+  .section-head .kicker{
+    font-size:14px;font-weight:800;color:var(--coral);margin-bottom:12px;display:block;
+  }
+  .section-head h2{font-size:clamp(28px,3.4vw,40px);line-height:1.15;}
+  .section-head p{margin-top:14px;font-size:16.5px;color:var(--ink-soft);}
+
+  /* TOOL GRID (ilovepdf-style) */
+  .tool-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
+  }
+  @media (max-width:980px){.tool-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.tool-grid{grid-template-columns:1fr;}}
+
+  .tool-card{
+    background:var(--white);border:1px solid var(--line);border-radius:18px;
+    padding:28px 24px;position:relative;overflow:hidden;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    cursor:pointer;
+  }
+  .tool-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:5px;
+    background:var(--tc);
+  }
+  .tool-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 20px 34px -16px rgba(27,35,64,0.28);
+    border-color:transparent;
+  }
+  .tool-icon{
+    width:52px;height:52px;border-radius:13px;background:var(--tc);
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+    color:white;
+  }
+  .tool-card h3{font-size:18px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;margin-bottom:8px;}
+  .tool-card p{font-size:14.5px;color:var(--ink-soft);}
+
+  /* HOW IT WORKS */
+  .steps{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:28px;counter-reset:step;
+  }
+  @media (max-width:900px){.steps{grid-template-columns:1fr 1fr;}}
+  @media (max-width:560px){.steps{grid-template-columns:1fr;}}
+  .step{position:relative;padding-top:8px;}
+  .step-num{
+    font-family:'Fraunces',serif;font-size:44px;font-weight:600;
+    color:var(--line);margin-bottom:6px;line-height:1;
+  }
+  .step h3{font-size:18px;margin-bottom:8px;}
+  .step p{font-size:14.5px;color:var(--ink-soft);}
+  .step:not(:last-child)::after{
+    content:"";position:absolute;top:26px;left:calc(100% - 4px);width:calc(100% - 20px);
+    height:2px;background:var(--line);display:none;
+  }
+  @media (min-width:901px){ .step:not(:last-child)::after{display:block;} }
+
+  /* RAG explainer */
+  .rag-panel{
+    background:var(--ink);color:var(--paper);border-radius:24px;
+    padding:56px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
+  }
+  .rag-panel h2{color:var(--paper);}
+  .rag-panel p{color:#C7CBDB;margin-top:14px;font-size:16px;}
+  .rag-list{margin-top:26px;display:flex;flex-direction:column;gap:16px;}
+  .rag-list li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:#E7E9F2;list-style:none;}
+  .rag-list .check{
+    width:20px;height:20px;border-radius:6px;background:var(--teal);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:12px;font-weight:900;margin-top:2px;
+  }
+  .rag-diagram{
+    background:#242B4D;border-radius:16px;padding:26px;font-size:13px;
+  }
+  .rag-node{
+    background:#2F3767;border:1px solid #3C4576;border-radius:10px;
+    padding:12px 14px;font-weight:700;color:var(--paper);margin-bottom:12px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .rag-node span.tag{
+    font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;
+  }
+  .arrow-down{text-align:center;color:#7D86B8;margin:2px 0;font-size:16px;}
+  @media (max-width:880px){ .rag-panel{grid-template-columns:1fr;padding:36px 24px;} }
+
+  /* FORMATS STRIP */
+  .format-strip{
+    display:flex;gap:14px;flex-wrap:wrap;
+  }
+  .format-pill{
+    background:var(--paper-dim);border:1px solid var(--line);border-radius:999px;
+    padding:12px 20px;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:10px;
+  }
+  .format-pill .dot{width:10px;height:10px;border-radius:50%;}
+
+  /* CTA BAND */
+  .cta-band{
+    background:linear-gradient(120deg, var(--violet), var(--purple));
+    border-radius:24px;padding:64px 56px;color:white;
+    display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;
+  }
+  .cta-band h2{color:white;font-size:clamp(26px,3vw,34px);max-width:480px;}
+  .cta-band p{color:#E7E3FF;margin-top:10px;max-width:440px;}
+  .cta-band .btn-primary{background:white;color:var(--violet);box-shadow:0 6px 0 rgba(0,0,0,0.18);}
+  .cta-band .btn-primary:hover{box-shadow:0 8px 0 rgba(0,0,0,0.18);}
+
+  /* FOOTER */
+  footer{padding:52px 0 40px;border-top:1px solid var(--line);}
+  .footer-top{
+    display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:36px;
+  }
+  .footer-cols{display:flex;gap:64px;flex-wrap:wrap;}
+  .footer-col h4{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:14px;}
+  .footer-col a{display:block;font-size:14px;color:var(--ink-soft);margin-bottom:10px;}
+  .footer-col a:hover{color:var(--ink);}
+  .footer-bottom{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:24px;border-top:1px solid var(--line);
+    font-size:13px;color:var(--ink-soft);flex-wrap:wrap;gap:10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <div class="logo"><div class="logo-mark">P</div>PaperGen</div>
+    <div class="nav-links">
+      <a href="#tools">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#formats">Formats</a>
+      <a href="#rag">How the AI works</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Log in</a>
+      <a href="#tools" class="btn btn-primary">Generate a paper</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow-tag"><span class="dot"></span> Grounded in your own material — no invented questions</div>
+      <h1>Turn your teaching material into an <em>exam-ready</em> paper.</h1>
+      <p class="sub">Upload the notes, slides, or textbook chapters you already use in class. PaperGen reads them, then builds a question paper in the formats you choose — ready to download as PDF or Word.</p>
+      <div class="hero-actions">
+        <a href="#tools" class="btn btn-primary">Upload material →</a>
+        <a href="#how" class="btn btn-ghost">See how it works</a>
+      </div>
+    </div>
+
+    <div class="paper-stack">
+      <div class="sheet back"></div>
+      <div class="sheet front">
+        <div class="doc-head">
+          <div class="title">Unit 4 — Cell Biology<br><span style="font-weight:400;font-size:13px;color:var(--ink-soft);">Mid-term paper</span></div>
+          <div class="meta">40 marks<br>45 minutes</div>
+        </div>
+        <div class="q-line">
+          <div class="q-num" style="background:var(--coral);">1</div>
+          <div class="q-text"><div class="line w80"></div><div class="line w60"></div></div>
+        </div>
+        <div class="q-line">
+          <div class="q-num" style="background:var(--teal);">2</div>
+          <div class="q-text"><div class="line w60"></div><div class="line w40"></div></div>
+        </div>
+        <div class="q-line">
+          <div class="q-num" style="background:var(--amber);">3</div>
+          <div class="q-text"><div class="line w80"></div><div class="line w60"></div><div class="line w40"></div></div>
+        </div>
+        <div class="q-line">
+          <div class="q-num" style="background:var(--purple);">4</div>
+          <div class="q-text"><div class="line w60"></div></div>
+        </div>
+      </div>
+      <div class="badge-float b1"><span class="ic" style="background:var(--teal);"></span> Sourced from your PDF</div>
+      <div class="badge-float b2"><span class="ic" style="background:var(--violet);"></span> Exported as .docx</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="tools">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Everything you need</span>
+      <h2>One tool for every step of building a paper</h2>
+      <p>Each part of the process is its own focused tool — pick what you need, in any order.</p>
+    </div>
+
+    <div class="tool-grid">
+      <div class="tool-card" style="--tc:var(--violet);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M12 3l-4 4M12 3l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Upload material</h3>
+        <p>Drop in PDFs, Word docs, slide decks, or scanned notes. Text, tables, and diagrams are all read.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--coral);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="2.5" stroke="white" stroke-width="2"/><circle cx="16" cy="8" r="2.5" stroke="white" stroke-width="2"/><path d="M4 19c0-3 2-5 4-5s4 2 4 5M12 19c0-3 2-5 4-5s4 2 4 5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Multiple choice</h3>
+        <p>Auto-generate MCQs with distractors pulled from the surrounding context, not made up.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--teal);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Short answer</h3>
+        <p>Create short-answer and fill-in-the-blank questions, each with a model answer attached.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--amber);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 4h9l5 5v11a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M9 13h6M9 17h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Long answer / essay</h3>
+        <p>Draft essay-style prompts, each paired with a marking guideline for consistent grading.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--purple);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="white" stroke-width="2"/></svg>
+        </div>
+        <h3>Mixed paper builder</h3>
+        <p>Combine formats into a single paper and set exactly how many marks each section is worth.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--rose);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20v-7" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Difficulty control</h3>
+        <p>Set the easy / medium / hard mix so the paper matches where your class actually is.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--red);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Export to PDF</h3>
+        <p>Download a print-ready PDF, formatted with your school's letterhead and cover page.</p>
+      </div>
+
+      <div class="tool-card" style="--tc:var(--blue);">
+        <div class="tool-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M8 13l2 5 2-4 2 4 2-5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Export to Word</h3>
+        <p>Get an editable .docx so you can tweak wording, spacing, or numbering before printing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section alt" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Start to finish</span>
+      <h2>From source material to finished paper in four steps</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Upload material</h3>
+        <p>Add the chapters, slides, or notes you've already taught from.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Choose the format</h3>
+        <p>Pick MCQ, short answer, essay, or a mix — and set the difficulty.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>PaperGen drafts it</h3>
+        <p>Questions are generated and checked against your source text.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Review and export</h3>
+        <p>Edit anything you like, then download as PDF or Word.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="formats">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Flexible by design</span>
+      <h2>Build the paper your syllabus actually needs</h2>
+      <p>Formats can be used alone or combined into one paper with a custom marks split.</p>
+    </div>
+    <div class="format-strip">
+      <div class="format-pill"><span class="dot" style="background:var(--coral);"></span>Multiple choice</div>
+      <div class="format-pill"><span class="dot" style="background:var(--teal);"></span>Short answer</div>
+      <div class="format-pill"><span class="dot" style="background:var(--amber);"></span>Fill in the blank</div>
+      <div class="format-pill"><span class="dot" style="background:var(--purple);"></span>Long answer / essay</div>
+      <div class="format-pill"><span class="dot" style="background:var(--rose);"></span>True or false</div>
+      <div class="format-pill"><span class="dot" style="background:var(--blue);"></span>Matching</div>
+      <div class="format-pill"><span class="dot" style="background:var(--violet);"></span>Mixed paper</div>
+    </div>
+  </div>
+</section>
+
+<section class="section alt" id="rag">
+  <div class="wrap">
+    <div class="rag-panel">
+      <div>
+        <h2>Every question comes from your material — not the model's imagination</h2>
+        <p>PaperGen uses retrieval-augmented generation: it searches your uploaded material for the most relevant passage, then writes the question from that passage.</p>
+        <ul class="rag-list">
+          <li><span class="check">✓</span>Questions cite the section of your material they were built from</li>
+          <li><span class="check">✓</span>Facts and figures stay consistent with your source, not a generic textbook</li>
+          <li><span class="check">✓</span>Works across PDFs, Word files, slide decks, and scanned pages</li>
+        </ul>
+      </div>
+      <div class="rag-diagram">
+        <div class="rag-node">Your material <span class="tag" style="background:var(--violet);color:white;">upload</span></div>
+        <div class="arrow-down">↓</div>
+        <div class="rag-node">Relevant passage found <span class="tag" style="background:var(--teal);color:var(--ink);">retrieve</span></div>
+        <div class="arrow-down">↓</div>
+        <div class="rag-node">Question drafted from it <span class="tag" style="background:var(--amber);color:var(--ink);">generate</span></div>
+        <div class="arrow-down">↓</div>
+        <div class="rag-node">Added to your paper <span class="tag" style="background:var(--coral);color:white;">place</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="cta-band">
+      <div>
+        <h2>Your next paper starts with one upload.</h2>
+        <p>No blank page, no digging through old files — just your material, turned into a paper you can hand out.</p>
+      </div>
+      <a href="#tools" class="btn btn-primary">Upload material →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="logo"><div class="logo-mark">P</div>PaperGen</div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#tools">Features</a>
+          <a href="#formats">Formats</a>
+          <a href="#rag">How the AI works</a>
+        </div>
+        <div class="footer-col">
+          <h4>Use cases</h4>
+          <a href="#">Schools</a>
+          <a href="#">Universities</a>
+          <a href="#">Tutors</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 PaperGen. Built for educators.</span>
+      <span>PDF &amp; Word export · MCQ · Short answer · Essay</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
